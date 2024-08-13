@@ -1,39 +1,31 @@
-const express = require('express')
-const app = express()
-const posr = 3000
+require('dotenv').config(); // Carregar variáveis de ambiente do .env
 
-const server = require('http').createServer(app)
-const io = require('socket.io')(server, {cors: {origin: 'http://localhost:5173'}})
+const express = require('express');
+const http = require('http');
+const path = require('path');
+const app = express();
+const port = process.env.PORT || 3000; // Usar a variável do .env, com fallback
 
-app.get('/', (req, res) => {
-  res.send('Olá Mundo!')
-})
+// Importar as rotas
+const routes = require('./routes/index');
 
-app.listen(posr, () => {
-  console.log(`Exemplo de app rodando em http://localhost:${posr}`)
-})
+// Criar o servidor HTTP
+const server = http.createServer(app);
 
-io.on('connection', socket => {
-    console.log('Usuário conectado', socket.id)
+// Importar e configurar o WebSocket
+const chatSocket = require('./socket/chatSocket');
+chatSocket(server);
 
-    socket.on('disconnect', reason => {
-        console.log('Usuário desconectado', socket.id)
-    })
+// Middleware para parsing de JSON
+app.use(express.json());
 
-    socket.on('set_username', username => {
-        socket.data.username = username
-    })
+// Servir arquivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 
-    socket.on('message', text => {
-        io.emit('received_message', {
-            text,
-            authorId: socket.id,
-            author: socket.data.username
-        })
-    })
+// Usar as rotas
+app.use('/api', routes);
 
-})
-
-server.listen(posr, () => {
-  console.log(`Server is running on posr ${posr}`)
-})
+// Iniciar o servidor
+server.listen(port, () => {
+  console.log(`Servidor rodando em http://localhost:${port}`);
+});
