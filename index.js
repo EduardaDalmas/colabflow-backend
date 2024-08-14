@@ -1,31 +1,22 @@
-require('dotenv').config(); // Carregar variáveis de ambiente do .env
-
+require('dotenv').config();
 const express = require('express');
-const http = require('http');
-const path = require('path');
 const app = express();
-const port = process.env.PORT || 3000; // Usar a variável do .env, com fallback
-
-// Importar as rotas
 const routes = require('./routes/index');
-
-// Criar o servidor HTTP
-const server = http.createServer(app);
-
-// Importar e configurar o WebSocket
 const chatSocket = require('./socket/chatSocket');
-chatSocket(server);
+
+const port = process.env.PORT || 3000;
+const socketPort = process.env.SOCKET_PORT || 3001;
 
 // Middleware para parsing de JSON
 app.use(express.json());
 
-// Servir arquivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-
 // Usar as rotas
 app.use('/api', routes);
 
-// Iniciar o servidor
-server.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+// Inicializar o WebSocket
+chatSocket(app, socketPort);
+
+// Iniciar o servidor HTTP (separado do WebSocket)
+app.listen(port, () => {
+    console.log(`HTTP server is running on port ${port}`);
 });

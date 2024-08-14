@@ -1,21 +1,36 @@
+const express = require('express');
+const http = require('http');
 const socketIo = require('socket.io');
 
-module.exports = function (server) {
-  const io = socketIo(server);
-
-  io.on('connection', (socket) => {
-    console.log('Novo cliente conectado');
-
-    // Evento para receber mensagens de chat
-    socket.on('message', (msg) => {
-      console.log('Mensagem recebida:', msg);
-      // Enviar a mensagem para todos os clientes conectados
-      io.emit('message', msg);
+module.exports = function (app, socketPort) {
+    const server = http.createServer(app);
+    const io = socketIo(server, {
+        cors: {
+            origin: 'http://localhost:5173', // Substitua pela origem correta
+        },
     });
 
-    // Evento para desconectar
-    socket.on('disconnect', () => {
-      console.log('Cliente desconectado');
+    io.on('connection', (socket) => {
+        console.log('Usuário conectado', socket.id);
+
+        socket.on('disconnect', (reason) => {
+            console.log('Usuário desconectado', socket.id);
+        });
+
+        socket.on('set_username', (username) => {
+            socket.data.username = username;
+        });
+
+        socket.on('message', (text) => {
+            io.emit('received_message', {
+                text,
+                authorId: socket.id,
+                author: socket.data.username,
+            });
+        });
     });
-  });
+
+    server.listen(socketPort, () => {
+        console.log(`WebSocket server is running on port ${socketPort}`);
+    });
 };
