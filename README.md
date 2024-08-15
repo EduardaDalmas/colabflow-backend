@@ -5,5 +5,6 @@ Projeto backend da aplicação Taskflow
 
 - npm init (criar um projeto)
 - npm i
+- npm run start
 
 
