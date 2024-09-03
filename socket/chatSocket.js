@@ -44,21 +44,40 @@ module.exports = function (app, socketPort) {
             }
         });
 
+        //leave room
+        socket.on('leave_room', (room) => {
+            socket.leave(room);
+            socket.data.oldRoom = room;
+            socket.data.room = null;
+            console.log(`${socket.data.username} saiu da sala ${room}`);
+        });
+
         socket.on('message', (messageData) => {
             const room = socket.data.room;
-            if (room) {
-              const message = {
+            const authRoom = messageData.room;
+            console.log(room);
+            console.log(authRoom);
+
+            if (authRoom == room) {
+            const message = {
                 authorId: messageData.authorId,
                 author: messageData.author,
                 text: messageData.text,
                 data: messageData.data,
+                room: room,
             };
+                      
                 
                 // Armazenar a mensagem no histórico da sala
                 messagesByRoom[room].push(message);
 
                 // Emitir a mensagem para todos os usuários na sala
-                io.to(room).emit('received_message', message);
+
+
+                //emite mensagem para apenas a sala atual
+                if(room == authRoom){
+                    io.to(room).emit('received_message', message);
+                }
             } else {
                 console.log('Erro: o usuário não está em nenhuma sala');
             }
