@@ -3,6 +3,7 @@ const express = require('express');
 const https = require('https');
 const fs = require('fs');
 const bodyParser = require('body-parser');
+const db = require('./config/db');
 const cors = require('cors');
 const routes = require('./routes/index');
 const chatSocket = require('./socket/chatSocket');
