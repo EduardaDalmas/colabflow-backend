@@ -6,9 +6,9 @@ const chatController = require('../controllers/chatController');
 const authController = require('../controllers/authController');
 
 // Rotas de usuários
-router.get('/users', userController.getAllUsers);
-router.get('/users/:id', userController.getUserById);
 router.post('/users', userController.createUser);
+router.get('/users/account/:email', userController.getUserByEmail);
+router.post('/users/account/edit', userController.editUser);
 
 // Rotas de chat
 router.get('/chats', chatController.getAllChats);
