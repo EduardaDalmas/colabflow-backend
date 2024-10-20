@@ -19,7 +19,7 @@ exports.login = (req, res) => {
         return res.status(404).send('Usuário não encontrado');
       }
       // verifica se o usuario esta ativo
-      if (results[0].deleted_at !== null) {
+      if (results[0].deleted_at != null) {
         return res.status(401).send('Usuário desativado');
       }
       const user = results[0];
