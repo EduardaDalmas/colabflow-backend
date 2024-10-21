@@ -19,6 +19,7 @@ router.post('/chats', chatController.createChat);
 // Rotas de autenticação
 router.post('/login', authController.login);
 router.post('/register', authController.register);
+router.post('/verify', authController.verifyOTP);
 
 // Rotas de perfil
 router.post('/profiles', profileController.createProfile);

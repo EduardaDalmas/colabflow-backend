@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seu Código OTP - ColabFlow</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #3f3e3e; 
+            margin: 0; 
+            padding: 20px; 
+            color: white; /* Cor do texto padrão para todo o corpo */
+        }
+        .otp-container { 
+            text-align: center; 
+            background: #3f3e3e; 
+            padding: 30px; 
+            border-radius: 10px; 
+            box-shadow: white; 
+        }
+        .otp { 
+            font-size: 24px; 
+            font-weight: bold; 
+            color: white; 
+            margin: 20px 0; 
+        }
+          .texto { 
+            font-size: 12px; 
+            color: white; 
+            margin: 20px 0; 
+        }
+        .logo {
+            max-width: 150px; /* Ajuste conforme necessário */
+            margin-bottom: 20px;
+        }
+        .tagline {
+            font-size: 16px; 
+            color: white; 
+            margin-top: 20px; 
+            line-height: 1.4;
+        }
+        .p {
+            font-size: 16px; 
+            color: white; 
+            margin-top: 20px; 
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <div class="otp-container">
+        <img src="https://i.ibb.co/PspWKFY/logo.png" alt="Logo ColabFlow" class="logo" />
+        <h1 style="color: white;">Seu Código OTP</h1>
+        <p style="color: white;">Utilize o código abaixo para verificar sua conta:</p>
+        <div class="otp">{{otp}} </div>
+        <div class="texto">
+        <p>Este código é válido por 2 horas.</p>
+        <p>Nunca mais perca o fio da meada nas suas interações.</p>
+        <p>Chat colaborativo que organiza as atividades dos seus times, ajudando sua equipe a priorizar e manter o foco no que realmente importa.</p>
+        <p><strong>ColabFlow</strong></p>
+        </div>
+    </div>
+</body>
+</html>

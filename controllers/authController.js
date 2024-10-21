@@ -3,54 +3,173 @@ const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const jwt = require('jsonwebtoken');
 const secret = 'sua_chave_secreta';
+const crypto = require('crypto');
+const moment = require('moment');
+const { sendEmail } = require('./mailController');
 
+
+// Função para gerar e armazenar o OTP criptografado no banco de dados
+async function generateAndStoreOTP(userId, db) {
+  // Gera o OTP de 6 dígitos
+  const otp = crypto.randomInt(100000, 999999).toString();
+
+  // Criptografa o OTP
+  const hashedOTP = await bcrypt.hash(otp, 10);
+
+  // Define a data de criação e expiração (expiração de 1 hora a partir de agora)
+  const createdAt = moment().format('YYYY-MM-DD HH:mm:ss');
+  const expiresAt = moment().add(1, 'hour').format('YYYY-MM-DD HH:mm:ss');
+
+  // Salva o OTP criptografado no banco de dados
+  return new Promise((resolve, reject) => {
+    db.query(
+      'INSERT INTO otp (id_user, otp, created_at, expires_at) VALUES (?, ?, ?, ?)',
+      [userId, hashedOTP, createdAt, expiresAt],
+      (err) => {
+        if (err) {
+          console.error('Erro ao salvar o OTP no banco de dados:', err);
+          reject('Erro ao gerar OTP');
+        } else {
+          console.log(`OTP gerado para o usuário ID ${userId}: ${otp}`); // Simula o envio por e-mail
+          resolve(otp); // Retorna o OTP para o envio por e-mail
+        }
+      }
+    );
+  });
+}
+
+
+exports.verifyOTP = async (req, res) => {
+  const { otp, email } = req.body;
+
+  //consulta o usuário no banco de dados com base no e-mail
+  const [results] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
+  const user = results[0];
+
+
+  try {
+
+    // Consulta o OTP no banco de dados
+    const [otpResults] = await db.promise().query('SELECT * FROM otp WHERE id_user = ? ORDER BY id DESC LIMIT 1', [results[0].id]);
+
+    if (otpResults.length === 0) {
+      return res.status(404).send('OTP não encontrado');
+    }
+
+    const otpData = otpResults[0];
+
+    // Verifica se o OTP está expirado
+    if (moment().isAfter(otpData.expires_at)) {
+      return res.status(401).send('OTP expirado');
+    }
+
+    // Verifica se o OTP já foi utilizado
+    if (otpData.deleted_at != null) {
+      return res.status(401).send('OTP já utilizado');
+    }
+
+    // Compara o OTP informado com o OTP criptografado no banco de dados
+    const isValid = await bcrypt.compare(otp, otpData.otp);
+
+    if (!isValid) {
+      return res.status(401).send('OTP inválido');
+    }
+
+    // se for válido, atualiza o registro do OTP no banco de dados
+    await db.promise().query('UPDATE otp SET deleted_at = ? WHERE id = ?', [moment().format('YYYY-MM-DD HH:mm:ss'), otpData.id]);
+    // Gera o token JWT
+    const payload = { id: user.id, email: user.email, name: user.name };
+    const token = jwt.sign(payload, secret, { expiresIn: 86400 }); // 24 horas
+
+
+    // Retorna uma resposta de sucesso
+    return res.status(200).send({
+      auth: true,
+      token: token,
+      user: { id: user.id, name: user.name, email: user.email },
+      message: 'OTP verificado com sucesso'
+    });
+
+
+  } catch (error) {
+    console.error('Erro ao verificar OTP:', error);
+    return res.status(500).send('Erro ao verificar OTP');
+  }
+};
 
 
 // Função para login
-exports.login = (req, res) => {
-    const { email } = req.body;
-    console.log(req.body);
-    db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
-      if (err) {
-        console.error('Erro ao buscar usuário:', err);
-        return res.status(500).send('Erro ao buscar usuário');
-      }
-      if (results.length === 0) {
-        return res.status(404).send('Usuário não encontrado');
-      }
-      // verifica se o usuario esta ativo
-      if (results[0].deleted_at != null) {
-        return res.status(401).send('Usuário desativado');
-      }
-      const user = results[0];
+exports.login = async (req, res) => {
+  const { email } = req.body;
 
-      const payload = {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        // Outros dados que você queira incluir
-      };
-      const token = jwt.sign(payload, secret, { expiresIn: 86400 }); // 24 horas
+  try {
+    // Consulta o usuário no banco de dados
+    const [results] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
 
-      res.status(200).send({ auth: true, token: token, user: { id: user.id, name: user.name, email: user.email } });
+    if (results.length === 0) {
+      return res.status(404).send('Usuário não encontrado');
+    }
 
+    // Verifica se o usuário está ativo
+    if (results[0].deleted_at != null) {
+      return res.status(401).send('Usuário desativado');
+    }
+
+    const user = results[0];
+
+    // Gera o token JWT
+    // const payload = { id: user.id, email: user.email, name: user.name };
+    // const token = jwt.sign(payload, secret, { expiresIn: 86400 }); // 24 horas
+
+    // Gera e armazena o OTP no banco
+    const otp = await generateAndStoreOTP(user.id, db);
+    const templateData = { otp }; 
+
+    // Envia o OTP para o e-mail do usuário
+    await sendEmail(email, 'Seu código OTP', './views/layouts/otp-template.hbs', templateData); 
+
+    // Envia a resposta final com token e dados do usuário
+    return res.status(200).send({
+      // auth: true,
+      // token: token,
+      user: { id: user.id, name: user.name, email: user.email },
+      message: 'OTP enviado para seu e-mail!'
     });
+  } catch (error) {
+    console.error('Erro no login:', error);
+    return res.status(500).send('Erro ao processar login');
+  }
+};
 
 
-  };
-  
-  // Função para registro
-  exports.register = (req, res) => {
-    const { name, email } = req.body;
-    console.log(req.body);
+// Função para registro
+exports.register = (req, res) => {
+  const { name, email } = req.body;
+  console.log(req.body);
 
-    db.query('INSERT INTO users (name, email) VALUES (?, ?)', [name, email], (err, result) => {
-      if (err) {
-        console.error('Erro ao registrar usuário:', err);
-        return res.status(500).send('Erro ao registrar usuário');
-      }
-      res.status(200).send('Usuário registrado com sucesso');
-    });
+  // Primeiro, insere o usuário no banco de dados
+  db.query('INSERT INTO users (name, email) VALUES (?, ?)', [name, email], async (err, result) => {
+    if (err) {
+      console.error('Erro ao registrar usuário:', err);
+      return res.status(500).send('Erro ao registrar usuário');
+    }
 
-  };
+    const userId = result.insertId; // Pega o ID do usuário recém-criado
+
+    try {
+      // Gera e armazena o OTP para o usuário recém-criado
+      const otp = await generateAndStoreOTP(userId, db);
+
+      // Aqui você pode enviar o OTP para o e-mail do usuário
+      console.log(`OTP enviado para o e-mail ${email}: ${otp}`);
+
+      // Retorna uma resposta de sucesso junto com uma mensagem de confirmação
+      res.status(200).send('Usuário registrado com sucesso. Verifique o código enviado para seu e-mail.');
+    } catch (error) {
+      console.error('Erro ao gerar OTP:', error);
+      res.status(500).send('Erro ao gerar o código OTP');
+    }
+  });
+};
+
   
