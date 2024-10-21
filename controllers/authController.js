@@ -81,12 +81,15 @@ exports.verifyOTP = async (req, res) => {
     const payload = { id: user.id, email: user.email, name: user.name };
     const token = jwt.sign(payload, secret, { expiresIn: 86400 }); // 24 horas
 
+    //executa query para consultar o numero de perfis do usuario
+    const [profiles] = await db.promise().query('SELECT COUNT(*) as total FROM profiles WHERE id_user = ?', [user.id]);
+
 
     // Retorna uma resposta de sucesso
     return res.status(200).send({
       auth: true,
       token: token,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, profiles: profiles[0].total },
       message: 'OTP verificado com sucesso'
     });
 
@@ -161,6 +164,9 @@ exports.register = (req, res) => {
       const otp = await generateAndStoreOTP(userId, db);
 
       const templateData = { otp }; 
+
+  
+
 
       // Envia o OTP para o e-mail do usuário
       await sendEmail(email, 'Seu código OTP', './views/layouts/otp-template.hbs', templateData); 

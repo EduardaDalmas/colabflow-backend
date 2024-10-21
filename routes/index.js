@@ -14,7 +14,7 @@ router.post('/users/account/edit', userController.editUser);
 
 // Rotas de chat
 router.get('/chats', chatController.getAllChats);
-router.get('/chats/:id', chatController.getChatById);
+router.get('/chats/:id', chatController.getChatByGroupId);
 router.post('/chats', chatController.createChat);
 
 // Rotas de autenticação

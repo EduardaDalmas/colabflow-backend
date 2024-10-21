@@ -1,4 +1,5 @@
 // controllers/ChatController.js
+const db = require('../config/db');
 
 // Função para obter todos os chats
 exports.getAllChats = (req, res) => {
@@ -11,11 +12,29 @@ exports.getAllChats = (req, res) => {
   };
   
   // Função para obter um chat específico por ID
-  exports.getChatById = (req, res) => {
-    const chatId = parseInt(req.params.id, 10);
-    // Exemplo de busca por ID (em uma aplicação real, seria uma consulta ao banco de dados)
-    const chat = { id: chatId, name: `Chat ${chatId}` };
-    res.json(chat);
+  exports.getChatByGroupId = (req, res) => {
+    const id_group = req.params.id;
+
+    db.query('SELECT * FROM chats WHERE id_group = ?', [id_group], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar chats:', err);
+            return res.status(500).send('Erro ao buscar chats');
+        }
+        if (results.length === 0) {
+            return res.status(404).send('Chat não encontrado');
+        }
+
+        // Mapear os resultados para o formato esperado (id, name)
+        const formattedResults = results.map(chat => ({
+            id: chat.id,
+            name: chat.name,
+            id_user: chat.id_user,
+            id_priority: chat.id_priority
+        }));
+
+        res.json(formattedResults);  // Retorna os perfis formatados
+    });
+    
   };
   
   // Função para criar um novo chat
