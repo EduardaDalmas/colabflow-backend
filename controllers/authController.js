@@ -160,11 +160,16 @@ exports.register = (req, res) => {
       // Gera e armazena o OTP para o usuário recém-criado
       const otp = await generateAndStoreOTP(userId, db);
 
-      // Aqui você pode enviar o OTP para o e-mail do usuário
-      console.log(`OTP enviado para o e-mail ${email}: ${otp}`);
+      const templateData = { otp }; 
+
+      // Envia o OTP para o e-mail do usuário
+      await sendEmail(email, 'Seu código OTP', './views/layouts/otp-template.hbs', templateData); 
 
       // Retorna uma resposta de sucesso junto com uma mensagem de confirmação
-      res.status(200).send('Usuário registrado com sucesso. Verifique o código enviado para seu e-mail.');
+      return res.status(200).send({
+        user: { id: userId, name: result.name, email: result.email },
+        message: 'Usuário registrado com sucesso. Verifique o código enviado para seu e-mail.'
+      });
     } catch (error) {
       console.error('Erro ao gerar OTP:', error);
       res.status(500).send('Erro ao gerar o código OTP');
