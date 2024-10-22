@@ -28,7 +28,7 @@ router.get('/profiles/:id_user', profileController.getProfileByUserId);
 
 // Rotas de grupos
 router.post('/groups', groupController.createGroup);
-router.get('/groups/:id_user', groupController.getGroupByUserId);
+router.get('/groups/:id_user/:id_context', groupController.getGroupByUserId);
 
 
 module.exports = router;

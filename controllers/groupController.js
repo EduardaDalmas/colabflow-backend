@@ -3,7 +3,7 @@ const db = require('../config/db');
 exports.createGroup = (req, res) => {
     const { name, id_context, id_user, id_priority } = req.body;
 
-    db.query('INSERT INTO groups (name, id_context, id_user, id_priority) VALUES (?, ?, ?, ?)', [name, id_context, id_user, id_priority], (err, result) => {
+    db.query('INSERT INTO `groups` (name, id_context, id_user, id_priority) VALUES (?, ?, ?, ?)', [name, id_context, id_user, id_priority], (err, result) => {
         if (err) {
             console.error('Erro ao criar grupo:', err);
             return res.status(500).send('Erro ao criar grupo');
@@ -17,8 +17,10 @@ exports.createGroup = (req, res) => {
 // Busca os grupos de acordo com o id do usuário e retorna JSON com id e name (dinâmico)
 exports.getGroupByUserId = (req, res) => {
     const id_user = req.params.id_user;
+    const id_context = req.params.id_context;
 
-    db.query('SELECT id, name FROM groups WHERE id_user = ?', [id_user], (err, results) => {
+    // db.query('SELECT id, name FROM groups WHERE id_user = ?', [id_user], (err, results) => {
+    db.query('SELECT id, name FROM `groups` WHERE id_user = ? AND id_context = ?', [id_user, id_context], (err, results) => {
         if (err) {
             console.error('Erro ao buscar grupos:', err);
             return res.status(500).send('Erro ao buscar grupos');
