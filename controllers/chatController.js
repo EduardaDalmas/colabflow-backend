@@ -41,7 +41,7 @@ exports.getAllChats = (req, res) => {
   exports.createChat = (req, res) => {
     const { name, id_group, id_user, id_priority } = req.body;
 
-    db.query('INSERT INTO chats (name, id_group, id_user, id_priority) VALUES (?, ?, ?, ?)', [name, id_group, id_user, id_priority], (err, result) => {
+    db.query('INSERT INTO `chats` (name, id_group, id_user, id_priority) VALUES (?, ?, ?, ?)', [name, id_group, id_user, id_priority], (err, result) => {
         if (err) {
             console.error('Erro ao criar chat:', err);
             return res.status(500).send('Erro ao criar chat');

@@ -35,3 +35,15 @@ exports.getLinksByChatId = (req, res) => {
     });
 };
 
+exports.deleteLink = (req, res) => {
+    const id = req.params.id;
+
+    db.query('DELETE FROM `important_links` WHERE id = ?', [id], (err, result) => {
+    if (err) {
+            console.error('Erro ao deletar link:', err);
+            return res.status(500).send('Erro ao deletar link');
+        }
+        res.status(200).send('Link deletado com sucesso');
+    });
+}
+
