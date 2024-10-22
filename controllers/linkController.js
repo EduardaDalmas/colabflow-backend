@@ -43,6 +43,10 @@ exports.deleteLink = (req, res) => {
             console.error('Erro ao deletar link:', err);
             return res.status(500).send('Erro ao deletar link');
         }
+        if (result.length === 0) {
+            return res.status(404).send('Links não encontrados');
+        }
+
         res.status(200).send('Link deletado com sucesso');
     });
 }
