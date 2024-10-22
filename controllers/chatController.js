@@ -39,8 +39,14 @@ exports.getAllChats = (req, res) => {
   
   // Função para criar um novo chat
   exports.createChat = (req, res) => {
-    const newChat = req.body;
-    // Aqui você salvaria o novo chat no banco de dados
-    res.status(201).json({ message: 'Chat criado com sucesso', chat: newChat });
+    const { name, id_group, id_user, id_priority } = req.body;
+
+    db.query('INSERT INTO chats (name, id_group, id_user, id_priority) VALUES (?, ?, ?, ?)', [name, id_group, id_user, id_priority], (err, result) => {
+        if (err) {
+            console.error('Erro ao criar chat:', err);
+            return res.status(500).send('Erro ao criar chat');
+        }
+        res.status(201).send('Chat criado com sucesso');
+    });
   };
   

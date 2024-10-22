@@ -6,6 +6,7 @@ const chatController = require('../controllers/chatController');
 const authController = require('../controllers/authController');
 const profileController = require('../controllers/profileController');
 const groupController = require('../controllers/groupController');
+const linkController = require('../controllers/linkController');
 
 // Rotas de usuários
 router.post('/users', userController.createUser);
@@ -29,6 +30,10 @@ router.get('/profiles/:id_user', profileController.getProfileByUserId);
 // Rotas de grupos
 router.post('/groups', groupController.createGroup);
 router.get('/groups/:id_user/:id_context', groupController.getGroupByUserId);
+
+// Rotas para links
+router.post('/links', linkController.createLink);
+router.get('/links/:id_chat', linkController.getLinksByChatId);
 
 
 module.exports = router;
