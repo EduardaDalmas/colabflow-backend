@@ -34,7 +34,7 @@ router.get('/groups/:id_user/:id_context', groupController.getGroupByUserId);
 // Rotas para links
 router.post('/links', linkController.createLink);
 router.get('/links/:id_chat', linkController.getLinksByChatId);
-router.delete('/links/:id', linkController.deleteLink);
+router.post('/links/:id', linkController.deleteLink);
 
 
 module.exports = router;
