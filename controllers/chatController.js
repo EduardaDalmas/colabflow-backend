@@ -49,4 +49,18 @@ exports.getAllChats = (req, res) => {
         res.status(201).send('Chat criado com sucesso');
     });
   };
+
+
+  // editar prioridade do chat
+  exports.editChat = (req, res) => {
+    const { id, id_priority } = req.body;
+
+    db.query('UPDATE `chats` SET id_priority = ? WHERE id = ?', [id_priority, id], (err, result) => {
+        if (err) {
+            console.error('Erro ao editar chat:', err);
+            return res.status(500).send('Erro ao editar chat');
+        }
+        res.status(200).send('Chat editado com sucesso');
+    });
+  };
   

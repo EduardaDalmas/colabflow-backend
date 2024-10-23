@@ -17,6 +17,7 @@ router.post('/users/account/edit', userController.editUser);
 router.get('/chats', chatController.getAllChats);
 router.get('/chats/:id', chatController.getChatByGroupId);
 router.post('/chats', chatController.createChat);
+router.post('/chats/edit', chatController.editChat);
 
 // Rotas de autenticação
 router.post('/login', authController.login);
@@ -34,7 +35,7 @@ router.get('/groups/:id_user/:id_context', groupController.getGroupByUserId);
 // Rotas para links
 router.post('/links', linkController.createLink);
 router.get('/links/:id_chat', linkController.getLinksByChatId);
-router.delete('/links/:id', linkController.deleteLink);
+router.post('/links/:id', linkController.deleteLink);
 
 
 module.exports = router;
