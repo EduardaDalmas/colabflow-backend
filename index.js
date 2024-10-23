@@ -15,9 +15,12 @@ const socketPort = process.env.SOCKET_PORT || 3001;
 // Middleware para parsing de JSON
 app.use(express.json());
 
+// lista de origens permitidas
+const whitelist = ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001', 'http://colabflow.westus2.cloudapp.azure.com', 'https://colabflow.westus2.cloudapp.azure.com'];
+
 app.use(bodyParser.json());
 app.use(cors({
-  origin: 'http://localhost:5173', // URL do frontend
+  origin: whitelist, // URL do frontend
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
