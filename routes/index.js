@@ -15,7 +15,7 @@ router.post('/users/account/edit', userController.editUser);
 
 // Rotas de chat
 router.get('/chats', chatController.getAllChats);
-router.get('/chats/:id', chatController.getChatByGroupId);
+router.get('/chats/:id_group/:id_user', chatController.getChatByGroupId);
 router.post('/chats', chatController.createChat);
 router.post('/chats/edit', chatController.editChat);
 router.get('/chats/users/:id_chat', chatController.getUsersChat);
@@ -32,6 +32,7 @@ router.get('/profiles/:id_user', profileController.getProfileByUserId);
 
 // Rotas de grupos
 router.post('/groups', groupController.createGroup);
+router.get('/groups/by-chat/:id_user', groupController.getGroupByChatUser);
 router.get('/groups/:id_user/:id_context', groupController.getGroupByUserId);
 
 // Rotas para links

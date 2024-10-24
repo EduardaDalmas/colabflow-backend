@@ -11,31 +11,40 @@ exports.getAllChats = (req, res) => {
     res.json(chats);
   };
   
-  // Função para obter um chat específico por ID
-  exports.getChatByGroupId = (req, res) => {
-    const id_group = req.params.id;
+// Função para obter um chat específico por ID do grupo e incluir chats onde o usuário é dono ou participante
+exports.getChatByGroupId = (req, res) => {
+  const id_group = req.params.id_group;
+  const id_user = req.params.id_user; 
 
-    db.query('SELECT * FROM chats WHERE id_group = ?', [id_group], (err, results) => {
-        if (err) {
-            console.error('Erro ao buscar chats:', err);
-            return res.status(500).send('Erro ao buscar chats');
-        }
-        if (results.length === 0) {
-            return res.status(404).send('Chat não encontrado');
-        }
+  const query = `
+    SELECT DISTINCT c.id, c.name, c.id_user, c.id_priority 
+    FROM chats c 
+    LEFT JOIN user_chat uc ON c.id = uc.id_chat
+    WHERE c.id_group = ? 
+    AND (c.id_user = ? OR uc.id_user = ?);
+  `;
 
-        // Mapear os resultados para o formato esperado (id, name)
-        const formattedResults = results.map(chat => ({
-            id: chat.id,
-            name: chat.name,
-            id_user: chat.id_user,
-            id_priority: chat.id_priority
-        }));
+  db.query(query, [id_group, id_user, id_user], (err, results) => {
+      if (err) {
+          console.error('Erro ao buscar chats:', err);
+          return res.status(500).send('Erro ao buscar chats');
+      }
+      if (results.length === 0) {
+          return res.status(404).send('Chat não encontrado');
+      }
 
-        res.json(formattedResults);  // Retorna os perfis formatados
-    });
-    
-  };
+      // Mapear os resultados para o formato esperado (id, name)
+      const formattedResults = results.map(chat => ({
+          id: chat.id,
+          name: chat.name,
+          id_user: chat.id_user,
+          id_priority: chat.id_priority
+      }));
+
+      res.json(formattedResults);  // Retorna os resultados formatados
+  });
+};
+
   
   // Função para criar um novo chat
   exports.createChat = (req, res) => {
