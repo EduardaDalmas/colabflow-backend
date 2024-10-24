@@ -18,6 +18,8 @@ router.get('/chats', chatController.getAllChats);
 router.get('/chats/:id', chatController.getChatByGroupId);
 router.post('/chats', chatController.createChat);
 router.post('/chats/edit', chatController.editChat);
+router.get('/chats/users/:id_chat', chatController.getUsersChat);
+router.post('/chats/users', chatController.createUserChat);
 
 // Rotas de autenticação
 router.post('/login', authController.login);
