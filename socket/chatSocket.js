@@ -4,9 +4,10 @@ const socketIo = require('socket.io');
 
 module.exports = function (app, socketPort) {
     const server = http.createServer(app);
+    const origins = ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001', 'http://colabflow.westus2.cloudapp.azure.com', 'https://colabflow.westus2.cloudapp.azure.com'];
     const io = socketIo(server, {
       cors: {
-        origin: 'http://localhost:5173',
+        origin: origins,
         methods: ['GET', 'POST'],
         allowedHeaders: ['Content-Type'],
         credentials: true,
