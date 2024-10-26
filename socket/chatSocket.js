@@ -4,6 +4,7 @@ const socketIo = require('socket.io');
 const { persistMessage } = require('../controllers/messageController'); // ajuste o caminho conforme necessário
 const { prepareMessage } = require('../services/messageService');
 const { decryptMessages } = require('../services/messageService');
+const { getMessages } = require('../services/messageService');
 
 module.exports = function (app, socketPort) {
     const server = http.createServer(app);
@@ -39,20 +40,33 @@ module.exports = function (app, socketPort) {
         socket.on('join_room', (room) => {
             socket.join(room);
             socket.data.room = room;
-            //desconecta da sala antiga
+        
+            // Desconecta da sala antiga
             if (socket.data.oldRoom) {
                 socket.leave(socket.data.oldRoom);
             }
             console.log(`${socket.data.username} entrou na sala ${room}`);
-            
-            // Enviar o histórico de mensagens da sala para o usuário que acabou de entrar
-            if (messagesByRoom[room]) {
-                socket.emit('room_history', messagesByRoom[room]);
-                console.log('Histórico de mensagens enviado para o usuário que acabou de entrar');
-            } else {
-                messagesByRoom[room] = [];  // Iniciar uma nova sala se ainda não existir
+        
+            // Busca as mensagens no banco de dados referentes à sala
+            getMessages(room, socket.data.username)
+                .then(messages => {
+                    console.log('Mensagens recuperadas:', messages); // Log das mensagens
+                    // Enviar o histórico de mensagens da sala para o usuário que acabou de entrar
+                    socket.emit('room_history', messages);
+                    console.log('Histórico de mensagens enviado para o usuário que acabou de entrar');
+                })
+                .catch(err => {
+                    console.error('Erro ao buscar mensagens:', err);
+                    socket.emit('error', 'Erro ao recuperar o histórico de mensagens.'); // Emitir erro para o cliente, se necessário
+                });
+        
+            // Inicializa a estrutura para armazenar mensagens da sala se ainda não existir
+            if (!messagesByRoom[room]) {
+                messagesByRoom[room] = [];
             }
         });
+        
+        
 
         //leave room
         socket.on('leave_room', (room) => {

@@ -20,4 +20,4 @@ function decryptMessage(encryptedText){
     return decrypted; // Retorna o texto decifrado
 }
 
-module.exports = { encryptMessage, decryptMessage };
+module.exports = { encryptMessage, decryptMessage }; 
