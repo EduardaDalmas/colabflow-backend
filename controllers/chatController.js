@@ -137,3 +137,20 @@ exports.createUserChat = (req, res) => {
 };
 
 
+//remover participante do chat
+exports.deleteUserChat = (req, res) => {
+    const id_chat = req.params.id_chat;
+    const id_user = req.params.id_user;   
+    console.log(id_chat);
+    console.log(id_user);
+
+      db.query('DELETE FROM `user_chat` WHERE id_chat = ? AND id_user = ?', [id_chat, id_user], (err, result) => {
+          if (err) {
+              console.error('Erro ao remover usuário do chat:', err);
+              return res.status(500).send('Erro ao remover usuário do chat');
+          }
+          res.status(200).send('Usuário removido do chat com sucesso');
+      });
+};
+
+

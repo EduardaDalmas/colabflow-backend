@@ -17,6 +17,7 @@ router.post('/users/account/edit', userController.editUser);
 router.get('/chats', chatController.getAllChats);
 router.get('/chats/users/:id_chat', chatController.getUsersChat);
 router.get('/chats/:id_group/:id_user', chatController.getChatByGroupId);
+router.post('/chatsuser/:id_chat/:id_user', chatController.deleteUserChat);
 router.post('/chats', chatController.createChat);
 router.post('/chats/edit', chatController.editChat);
 router.post('/chats/users', chatController.createUserChat);

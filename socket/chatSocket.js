@@ -1,6 +1,9 @@
 const express = require('express');
 const http = require('http');
 const socketIo = require('socket.io');
+const { persistMessage } = require('../controllers/messageController'); // ajuste o caminho conforme necessário
+const { prepareMessage } = require('../services/messageService');
+const { decryptMessages } = require('../services/messageService');
 
 module.exports = function (app, socketPort) {
     const server = http.createServer(app);
@@ -16,6 +19,11 @@ module.exports = function (app, socketPort) {
 
     // Objeto para armazenar mensagens por sala
     const messagesByRoom = {};
+
+
+
+
+
 
     io.on('connection', (socket) => {
         console.log('Usuário conectado', socket.id);
@@ -40,6 +48,7 @@ module.exports = function (app, socketPort) {
             // Enviar o histórico de mensagens da sala para o usuário que acabou de entrar
             if (messagesByRoom[room]) {
                 socket.emit('room_history', messagesByRoom[room]);
+                console.log('Histórico de mensagens enviado para o usuário que acabou de entrar');
             } else {
                 messagesByRoom[room] = [];  // Iniciar uma nova sala se ainda não existir
             }
@@ -57,7 +66,7 @@ module.exports = function (app, socketPort) {
             const room = socket.data.room;
             const authRoom = messageData.room;
             console.log(room);
-            console.log(authRoom);
+            console.log('oi',authRoom);
 
             if (authRoom == room) {
             const message = {
@@ -70,7 +79,7 @@ module.exports = function (app, socketPort) {
                       
                 
                 // Armazenar a mensagem no histórico da sala
-                messagesByRoom[room].push(message);
+                // messagesByRoom[room].push(message);
 
                 // Emitir a mensagem para todos os usuários na sala
 
@@ -78,7 +87,20 @@ module.exports = function (app, socketPort) {
                 //emite mensagem para apenas a sala atual
                 if(room == authRoom){
                     io.to(room).emit('received_message', message);
+
+                    // Preparar a mensagem antes de persistir, criptografando o texto
+                    const preparedMessage = prepareMessage(message);
+                    // Persistir a mensagem no banco de dados
+                    persistMessage(preparedMessage);
+
+                    //teste de descriptografia
+                    decryptedMessage = decryptMessages(preparedMessage);
+
+                    console.log('Mensagem descriptografada:', decryptedMessage);
                 }
+
+
+
             } else {
                 console.log('Erro: o usuário não está em nenhuma sala');
             }
