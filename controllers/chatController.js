@@ -131,7 +131,7 @@ exports.createUserChat = (req, res) => {
               console.error('Erro ao adicionar usuário ao chat:', err);
               return res.status(500).send('Erro ao adicionar usuário ao chat');
           }
-          res.status(201).send('Usuário adicionado ao chat com sucesso');
+          res.status(200).send('Usuário adicionado com sucesso!');
       });
   });
 };
@@ -149,7 +149,7 @@ exports.deleteUserChat = (req, res) => {
               console.error('Erro ao remover usuário do chat:', err);
               return res.status(500).send('Erro ao remover usuário do chat');
           }
-          res.status(200).send('Usuário removido do chat com sucesso');
+          res.status(200).send('Usuário removido com sucesso!');
       });
 };
 

@@ -82,14 +82,25 @@ exports.verifyOTP = async (req, res) => {
     const token = jwt.sign(payload, secret, { expiresIn: 86400 }); // 24 horas
 
     //executa query para consultar o numero de perfis do usuario
-    const [profiles] = await db.promise().query('SELECT COUNT(*) as total FROM profiles WHERE id_user = ?', [user.id]);
+    // const [profiles] = await db.promise().query('SELECT COUNT(*) as total FROM profiles WHERE id_user = ?', [user.id]);
+    // Executa uma query para consultar o número de perfis e o ID, caso exista apenas um perfil
+    const [result] = await db.promise().query(`
+      SELECT id, 
+            (SELECT COUNT(*) FROM profiles WHERE id_user = ?) AS total
+      FROM profiles 
+      WHERE id_user = ? 
+      LIMIT 1
+    `, [user.id, user.id]);
 
+    // Se houver apenas um perfil, retorna o id; caso contrário, retorna null ou uma mensagem
+    const profileId = result[0].total === 1 ? result[0].id : null;
+    console.log('id do profile',profileId);
 
     // Retorna uma resposta de sucesso
     return res.status(200).send({
       auth: true,
       token: token,
-      user: { id: user.id, name: user.name, email: user.email, profiles: profiles[0].total },
+      user: { id: user.id, name: user.name, email: user.email, profiles: profileId },
       message: 'OTP verificado com sucesso'
     });
 
@@ -160,6 +171,19 @@ exports.register = (req, res) => {
     const userId = result.insertId; // Pega o ID do usuário recém-criado
 
     try {
+
+      //cria um profile default para o usuario, com o nome dele
+      db.query('INSERT INTO profiles (id_user, description) VALUES (?, ?)', [userId, name], (err, result) => {
+        if (err) {
+          console.error('Erro ao criar perfil:', err);
+          return res.status(500).send('Erro ao criar perfil');
+        }
+      });
+      
+
+
+
+
       // Gera e armazena o OTP para o usuário recém-criado
       const otp = await generateAndStoreOTP(userId, db);
 
