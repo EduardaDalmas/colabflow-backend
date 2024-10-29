@@ -87,13 +87,14 @@ const getMessages = (chatName, userName) => {
                 // Mapeando o resultado para o formato desejado
                 const formattedMessages = result.map((message) => {
                     const decryptedMessage = decryptMessage(message.message); // Descriptografando a mensagem
-                    const localDate = new Date(message.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+                    const localDate = new Date(message.created_at).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }).replace(',', '');
 
                     return {
                         authorId: message.id_user, // ID do autor (ou mapeie conforme necessário)
                         author: message.author,     // Nome do autor
                         text: decryptedMessage,      // Texto descriptografado
                         // data: message.created_at.toISOString().slice(0, 19).replace('T', ' '), // Formatação da data
+                        //formata a data removendo a virgula
                         data: localDate, // Formatação da data
                         room: chatName               // Nome da sala
                     };
