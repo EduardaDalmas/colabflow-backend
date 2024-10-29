@@ -70,7 +70,6 @@ const decryptMessages = (message) => {
 
 const getMessages = (chatName, userName) => {
     return new Promise((resolve, reject) => {
-        // Aqui, você pode precisar ajustar a consulta para juntar com a tabela de usuários
         const query = `
             SELECT m.id, m.id_chat, m.id_user, m.message, m.created_at,
                    u.name AS author
