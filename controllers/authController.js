@@ -93,7 +93,8 @@ exports.verifyOTP = async (req, res) => {
     `, [user.id, user.id]);
 
     // Se houver apenas um perfil, retorna o id; caso contrário, retorna null ou uma mensagem
-    const profileId = result[0].total === 1 ? result[0].id : null;
+    // const profileId = result[0].total === 1 ? result[0].id : null;
+    const profileId = result.length > 0 && result[0].total === 1 ? result[0].id : null;
     console.log('id do profile',profileId);
 
     // Retorna uma resposta de sucesso
