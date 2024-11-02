@@ -26,6 +26,25 @@ exports.getUserByEmail = (req, res) => {
     });
 };
 
+exports.getUserById = (req, res) => {
+    const id = req.params.id;
+    console.log(id);
+    const userQuery = `SELECT * FROM users WHERE id = '${id}'`;
+
+    db.query(userQuery, (err, results) => {
+        if (err) {
+            console.log('Erro ao buscar usuário:', err);
+            return res.status(500).send('Erro ao buscar usuário');
+        }
+        if (results.length === 0) {
+            console.log('Usuário não encontrado');
+            return res.status(404).send('Usuário não encontrado');
+        }
+        const user = results[0];
+        res.json(user);
+    });
+};
+
 exports.editUser = (req, res) => {
     const { name, email, link_profile, status, id } = req.body;
 
