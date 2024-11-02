@@ -27,11 +27,11 @@ exports.getUserByEmail = (req, res) => {
 };
 
 exports.editUser = (req, res) => {
-    const { id, name, email } = req.body;
+    const { name, email, link_profile, status, id } = req.body;
 
-    const userQuery = `UPDATE users SET name = ?, email = ? WHERE id = ?`;
+    const userQuery = `UPDATE users SET name = ?, email = ?, link_profile = ?, status = ? WHERE id = ?`;
 
-    db.query(userQuery, [name, email, id], (err, results) => {
+    db.query(userQuery, [name, email, link_profile, status, id], (err, results) => {
         if (err) {
             console.error('Erro ao editar usuário:', err);
             return res.status(500).json({ message: 'Erro ao editar usuário', error: err });
