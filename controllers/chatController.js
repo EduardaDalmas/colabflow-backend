@@ -62,16 +62,18 @@ exports.getChatByGroupId = (req, res) => {
 
   // editar prioridade do chat
   exports.editChat = (req, res) => {
-    const { id, id_priority } = req.body;
+    const { id_user, name, id_priority, id_group, id_chat } = req.body;
 
-    db.query('UPDATE `chats` SET id_priority = ? WHERE id = ?', [id_priority, id], (err, result) => {
+    db.query('UPDATE `chats` SET id_user = ?, name = ?, id_priority = ?, id_group = ? WHERE id = ?', [id_user, name, id_priority, id_group, id_chat], (err, result) => {
         if (err) {
             console.error('Erro ao editar chat:', err);
             return res.status(500).send('Erro ao editar chat');
         }
         res.status(200).send('Chat editado com sucesso');
+        console.log(res);
     });
   };
+
 
 // busca participantes do chat
 exports.getUsersChat = (req, res) => {
