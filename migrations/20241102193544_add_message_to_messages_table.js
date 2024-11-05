@@ -3,15 +3,18 @@
  * @returns { Promise<void> }
  */
 exports.up = async function(knex) {
-    await knex.schema.table('messages', function(table) {
+    await knex.schema.table('messages', async function(table) {
         // Define o campo 'text' com valor padrão null
         table.text('text').nullable().defaultTo(null).alter();
-
-        // Cria o campo 'message' se não existir
-        if (!table.hasColumn('message')) {
-            table.text('message').nullable();
-        }
     });
+
+    // Check if the 'message' column exists, and add it if it doesn't
+    const hasMessageColumn = await knex.schema.hasColumn('messages', 'message');
+    if (!hasMessageColumn) {
+        await knex.schema.table('messages', function(table) {
+            table.text('message').nullable();
+        });
+    }
 };
 
 /**
@@ -23,7 +26,7 @@ exports.down = async function(knex) {
         // Remove o campo 'message' se a migration for revertida
         table.dropColumn('message');
         
-        // Para o campo 'text', se necessário, você pode reverter para um estado anterior, se aplicável
-        // Exemplo: table.string('text').notNullable().alter();
+        // Optional: revert the 'text' column to a previous state if needed
+        // Example: table.string('text').notNullable().alter();
     });
 };
