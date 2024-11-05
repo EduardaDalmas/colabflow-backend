@@ -31,6 +31,8 @@ router.post('/verify', authController.verifyOTP);
 // Rotas de perfil
 router.post('/profiles', profileController.createProfile);
 router.get('/profiles/:id_user', profileController.getProfileByUserId);
+router.post('/profiles/edit', profileController.editProfile);
+router.post('/profiles/delete', profileController.deleteProfile);
 
 // Rotas de grupos
 router.post('/groups', groupController.createGroup);
