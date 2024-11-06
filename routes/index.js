@@ -38,6 +38,8 @@ router.post('/profiles/delete', profileController.deleteProfile);
 router.post('/groups', groupController.createGroup);
 router.get('/groups/by-chat/:id_user', groupController.getGroupByChatUser);
 router.get('/groups/:id_user/:id_context', groupController.getGroupByUserId);
+router.post('/groups/edit', groupController.editGroup);
+router.post('/groups/delete', groupController.deleteGroup);
 
 // Rotas para links
 router.post('/links', linkController.createLink);

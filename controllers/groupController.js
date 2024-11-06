@@ -1,3 +1,4 @@
+const e = require('express');
 const db = require('../config/db');
 
 exports.createGroup = (req, res) => {
@@ -20,7 +21,7 @@ exports.getGroupByUserId = (req, res) => {
     const id_context = req.params.id_context;
 
     // db.query('SELECT id, name FROM groups WHERE id_user = ?', [id_user], (err, results) => {
-    db.query('SELECT id, name FROM `groups` WHERE id_user = ? AND id_context = ?', [id_user, id_context], (err, results) => {
+    db.query('SELECT id, name FROM `groups` WHERE id_user = ? AND id_context = ? AND deleted_at IS NULL', [id_user, id_context], (err, results) => {
         if (err) {
             console.error('Erro ao buscar grupos:', err);
             return res.status(500).send('Erro ao buscar grupos');
@@ -64,3 +65,26 @@ exports.getGroupByChatUser = (req, res) => {
     });
 };
 
+exports.editGroup = (req, res) => {
+    const { name, id_user, id } = req.body;
+
+    db.query('UPDATE `groups` SET name = ?, id_user = ? WHERE id = ?', [name, id_user, id], (err, result) => {
+        if (err) {
+            console.error('Erro ao editar grupo:', err);
+            return res.status(500).send('Erro ao editar grupo');
+        }
+        res.status(200).send('Grupo editado com sucesso');
+    });
+}
+
+exports.deleteGroup = (req, res) => {
+    const { id } = req.body;
+    // salvar data no campo timestamp deleted_at
+    db.query('UPDATE `groups` SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?', [id], (err, result) => {
+        if (err) {
+            console.error('Erro ao deletar grupo:', err);
+            return res.status(500).send('Erro ao deletar grupo');
+        }
+        res.status(200).send('Grupo deletado com sucesso');
+    });
+}
