@@ -21,7 +21,19 @@ exports.getGroupByUserId = (req, res) => {
     const id_context = req.params.id_context;
 
     // db.query('SELECT id, name FROM groups WHERE id_user = ?', [id_user], (err, results) => {
-    db.query('SELECT id, name FROM `groups` WHERE id_user = ? AND id_context = ? AND deleted_at IS NULL', [id_user, id_context], (err, results) => {
+        db.query(
+            `SELECT 
+                groups.id, 
+                groups.name, 
+                priorities.id AS priority_id, 
+                priorities.name AS priority_name
+             FROM groups
+             INNER JOIN priorities ON groups.id_priority = priorities.id
+             WHERE groups.id_user = ? 
+             AND groups.id_context = ? 
+             AND groups.deleted_at IS NULL`,
+            [id_user, id_context],
+            (err, results) => {
         if (err) {
             console.error('Erro ao buscar grupos:', err);
             return res.status(500).send('Erro ao buscar grupos');
@@ -34,6 +46,10 @@ exports.getGroupByUserId = (req, res) => {
         const formattedResults = results.map(group => ({
             id: group.id,
             name: group.name,  // Ajuste para 'name'
+            priority: {
+                id: group.priority_id,
+                name: group.priority_name
+            }
         }));
 
         res.json(formattedResults);  // Retorna os perfis formatados
@@ -45,8 +61,15 @@ exports.getGroupByUserId = (req, res) => {
 exports.getGroupByChatUser = (req, res) => {
     const id_user = req.params.id_user;
 
-    db.query('SELECT DISTINCT g.id, g.name FROM `groups` g JOIN chats c ON g.id = c.id_group JOIN user_chat uc ON c.id = uc.id_chat WHERE uc.id_user = ? AND g.id_user != ?', [id_user, id_user], (err, results) => {
-        if (err) {
+    db.query(`
+        SELECT DISTINCT g.id, g.name, g.id_priority, p.name AS priority_name
+        FROM \`groups\` g
+        JOIN chats c ON g.id = c.id_group
+        JOIN user_chat uc ON c.id = uc.id_chat
+        JOIN priorities p ON g.id_priority = p.id  -- Adiciona o JOIN com a tabela 'priorities'
+        WHERE uc.id_user = ? 
+        AND g.id_user != ?
+    `, [id_user, id_user], (err, results) => {        if (err) {
             console.error('Erro ao buscar grupos:', err);
             return res.status(500).send('Erro ao buscar grupos');
         }
@@ -59,6 +82,11 @@ exports.getGroupByChatUser = (req, res) => {
         const formattedResults = results.map(group => ({
             id: group.id,
             name: group.name,  // Ajuste para 'name'
+            priority: {
+                id: group.priority_id,
+                name: group.priority_name
+            }
+            
         }));
 
         res.json(formattedResults);  // Retorna os perfis formatados

@@ -24,7 +24,7 @@ exports.getChatByGroupId = (req, res) => {
     AND (c.id_user = ? OR uc.id_user = ?);
   `;
 
-  db.query(query, [id_group, id_user, id_user], (err, results) => {
+  db.query(query, [id_group, id_user, id_user], async (err, results) => {
       if (err) {
           console.error('Erro ao buscar chats:', err);
           return res.status(500).send('Erro ao buscar chats');
@@ -33,13 +33,31 @@ exports.getChatByGroupId = (req, res) => {
           return res.status(404).send('Chat não encontrado');
       }
 
-      // Mapear os resultados para o formato esperado (id, name)
-      const formattedResults = results.map(chat => ({
-          id: chat.id,
-          name: chat.name,
-          id_user: chat.id_user,
-          id_priority: chat.id_priority
-      }));
+        // Mapeia os resultados e cria uma lista de promessas para a contagem de notificações
+        const resultsWithNotifications = await Promise.all(results.map(async (chat) => {
+            const count = await new Promise((resolve, reject) => {
+                const query = `SELECT COUNT(*) AS count FROM notifications WHERE chat_id = ? AND status = 'NOVA'`;
+                db.query(query, [chat.id], (err, result) => {
+                    if (err) return reject(err);
+                    resolve(result[0].count);
+                });
+            });
+            return {
+                ...chat,
+                notifications: count,
+            };
+        }));
+
+
+
+        // Mapeia os resultados para o formato final
+        const formattedResults = resultsWithNotifications.map(chat => ({
+            id: chat.id,
+            name: chat.name,
+            id_user: chat.id_user,
+            id_priority: chat.id_priority,
+            notifications: chat.notifications,
+        }));
 
       res.json(formattedResults);  // Retorna os resultados formatados
   });
