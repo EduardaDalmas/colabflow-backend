@@ -25,6 +25,7 @@ exports.getGroupByUserId = (req, res) => {
             `SELECT 
                 groups.id, 
                 groups.name, 
+                groups.id_user,
                 priorities.id AS priority_id, 
                 priorities.name AS priority_name
              FROM groups
@@ -49,7 +50,8 @@ exports.getGroupByUserId = (req, res) => {
             priority: {
                 id: group.priority_id,
                 name: group.priority_name
-            }
+            },
+            id_owner: group.id_user
         }));
 
         res.json(formattedResults);  // Retorna os perfis formatados
@@ -115,4 +117,21 @@ exports.deleteGroup = (req, res) => {
         }
         res.status(200).send('Grupo deletado com sucesso');
     });
+}
+
+exports.getGroupOwner = (req, res) => {
+    const id_group = req.params.id_group;
+
+    db.query('SELECT id_user FROM `groups` WHERE id = ?', [id_group], (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar dono do grupo:', err);
+            return res.status(500).send('Erro ao buscar dono do grupo');
+        }
+        if (results.length === 0) {
+            return res.status(404).send('Grupo não encontrado');
+        }
+
+        res.json(results[0].id_user);  // Retorna o id do dono do grupo
+    }
+    );
 }

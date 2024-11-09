@@ -16,13 +16,25 @@ exports.getChatByGroupId = (req, res) => {
   const id_group = req.params.id_group;
   const id_user = req.params.id_user; 
 
-  const query = `
-    SELECT DISTINCT c.id, c.name, c.id_user, c.id_priority 
-    FROM chats c 
-    LEFT JOIN user_chat uc ON c.id = uc.id_chat
-    WHERE c.id_group = ? 
-    AND (c.id_user = ? OR uc.id_user = ?);
-  `;
+//   const query = `
+//     SELECT DISTINCT c.id, c.name, c.id_user, c.id_priority 
+//     FROM chats c 
+//     LEFT JOIN user_chat uc ON c.id = uc.id_chat
+//     WHERE c.id_group = ? 
+//     AND (c.id_user = ? OR uc.id_user = ?);
+//   `;
+
+    const query = `
+        SELECT DISTINCT c.id, c.name, c.id_user, c.id_priority, g.id_user AS group_owner
+        FROM chats c
+        LEFT JOIN user_chat uc ON c.id = uc.id_chat
+        LEFT JOIN groups g ON c.id_group = g.id
+        WHERE c.id_group = ?
+        AND (c.id_user = ? OR uc.id_user = ?);
+    `;
+
+
+
 
   db.query(query, [id_group, id_user, id_user], async (err, results) => {
       if (err) {
@@ -41,12 +53,15 @@ exports.getChatByGroupId = (req, res) => {
                     if (err) return reject(err);
                     resolve(result[0].count);
                 });
+            
+            
             });
             return {
                 ...chat,
                 notifications: count,
             };
         }));
+
 
 
 
@@ -57,6 +72,7 @@ exports.getChatByGroupId = (req, res) => {
             id_user: chat.id_user,
             id_priority: chat.id_priority,
             notifications: chat.notifications,
+            id_dono: chat.group_owner,
         }));
 
       res.json(formattedResults);  // Retorna os resultados formatados
