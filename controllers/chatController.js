@@ -13,70 +13,56 @@ exports.getAllChats = (req, res) => {
   
 // Função para obter um chat específico por ID do grupo e incluir chats onde o usuário é dono ou participante
 exports.getChatByGroupId = (req, res) => {
-  const id_group = req.params.id_group;
-  const id_user = req.params.id_user; 
-
-//   const query = `
-//     SELECT DISTINCT c.id, c.name, c.id_user, c.id_priority 
-//     FROM chats c 
-//     LEFT JOIN user_chat uc ON c.id = uc.id_chat
-//     WHERE c.id_group = ? 
-//     AND (c.id_user = ? OR uc.id_user = ?);
-//   `;
+    const id_group = req.params.id_group;
+    const id_user = req.params.id_user;
 
     const query = `
         SELECT DISTINCT c.id, c.name, c.id_user, c.id_priority, g.id_user AS group_owner
-        FROM chats c
+        FROM \`chats\` c
         LEFT JOIN user_chat uc ON c.id = uc.id_chat
-        LEFT JOIN groups g ON c.id_group = g.id
+        LEFT JOIN \`groups\` g ON c.id_group = g.id
         WHERE c.id_group = ?
         AND (c.id_user = ? OR uc.id_user = ?);
     `;
 
-
-
-
-  db.query(query, [id_group, id_user, id_user], async (err, results) => {
-      if (err) {
-          console.error('Erro ao buscar chats:', err);
-          return res.status(500).send('Erro ao buscar chats');
-      }
-      if (results.length === 0) {
-          return res.status(404).send('Chat não encontrado');
-      }
-
-        // Mapeia os resultados e cria uma lista de promessas para a contagem de notificações
-        const resultsWithNotifications = await Promise.all(results.map(async (chat) => {
-            const count = await new Promise((resolve, reject) => {
-                const query = `SELECT COUNT(*) AS count FROM notifications WHERE chat_id = ? AND status = 'NOVA'`;
-                db.query(query, [chat.id], (err, result) => {
-                    if (err) return reject(err);
-                    resolve(result[0].count);
+    db.query(query, [id_group, id_user, id_user], async (err, results) => {
+        try {
+            // Mapeia os resultados e cria uma lista de promessas para a contagem de notificações
+            const resultsWithNotifications = await Promise.all(results.map(async (chat) => {
+                const count = await new Promise((resolve, reject) => {
+                    const notificationQuery = `SELECT COUNT(*) AS count FROM \`notifications\` WHERE chat_id = ? AND status = 'NOVA'`;
+                    db.query(notificationQuery, [chat.id], (err, result) => {
+                        if (err) {
+                            reject(err);  // Caso ocorra um erro na consulta de notificações
+                        } else {
+                            resolve(result[0].count);
+                        }
+                    });
                 });
-            
-            
-            });
-            return {
-                ...chat,
-                notifications: count,
-            };
-        }));
+                return {
+                    ...chat,
+                    notifications: count,
+                };
+            }));
 
+            // Mapeia os resultados para o formato final
+            const formattedResults = resultsWithNotifications.map(chat => ({
+                id: chat.id,
+                name: chat.name,
+                id_user: chat.id_user,
+                id_priority: chat.id_priority,
+                notifications: chat.notifications,
+                id_dono: chat.group_owner,
+            }));
 
+            res.json(formattedResults);  // Retorna os resultados formatados
+        } catch (error) {
+            console.error('Erro ao processar notificações:', error);
+            res.status(500).send('Erro ao processar notificações');
+        }
+    });
 
-
-        // Mapeia os resultados para o formato final
-        const formattedResults = resultsWithNotifications.map(chat => ({
-            id: chat.id,
-            name: chat.name,
-            id_user: chat.id_user,
-            id_priority: chat.id_priority,
-            notifications: chat.notifications,
-            id_dono: chat.group_owner,
-        }));
-
-      res.json(formattedResults);  // Retorna os resultados formatados
-  });
+    
 };
 
   
