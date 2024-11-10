@@ -36,11 +36,13 @@ router.post('/profiles/delete', profileController.deleteProfile);
 
 // Rotas de grupos
 router.post('/groups', groupController.createGroup);
-router.get('/groups/owner/:id_group', groupController.getGroupOwner);
 router.get('/groups/by-chat/:id_user', groupController.getGroupByChatUser);
 router.get('/groups/:id_user/:id_context', groupController.getGroupByUserId);
 router.post('/groups/edit', groupController.editGroup);
 router.post('/groups/delete', groupController.deleteGroup);
+
+// Rotas de grupo
+router.get('/group/owner/:id_group', groupController.getGroupOwner);
 
 // Rotas para links
 router.post('/links', linkController.createLink);
