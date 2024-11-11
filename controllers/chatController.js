@@ -1,5 +1,7 @@
 // controllers/ChatController.js
 const db = require('../config/db');
+const path = require('path');
+const fs = require('fs');
 
 // Função para obter todos os chats
 exports.getAllChats = (req, res) => {
@@ -173,6 +175,54 @@ exports.deleteUserChat = (req, res) => {
           }
           res.status(200).send('Usuário removido com sucesso!');
       });
+};
+
+
+
+
+// Função para realizar o dump do chat
+exports.dumpChat = (req, res) => {
+    const id_chat = req.params.id_chat;
+    const outputFile = path.resolve(__dirname, `../dumps/chat_${id_chat}.sql`);
+    console.log(`Iniciando exportação para o chat ID: ${id_chat}`);
+
+    // Consulta para obter os registros da tabela messages relacionados ao id_chat
+    const query = 'SELECT * FROM `messages` WHERE id_chat = ?';
+
+    db.query(query, [id_chat], (err, results) => {
+        if (err) {
+            console.error('Erro ao realizar a consulta:', err);
+            return res.status(500).send('Erro ao realizar a consulta');
+        }
+
+        if (results.length === 0) {
+            return res.status(404).send('Nenhum registro encontrado para o id_chat fornecido');
+        }
+
+        // Criação do arquivo de dump
+        let sqlDump = `-- Dump dos registros da tabela messages para id_chat = ${id_chat}\n\n`;
+
+        // Formatação dos registros no estilo SQL para exportação
+        results.forEach(row => {
+            sqlDump += `INSERT INTO messages (id, id_chat, id_user, message, created_at) VALUES (${row.id}, ${row.id_chat}, ${row.id_user}, '${row.message.replace(/'/g, "''")}', '${row.created_at}');\n`;
+        });
+
+        // Escrever o conteúdo no arquivo
+        fs.writeFileSync(outputFile, sqlDump);
+
+        // Enviar o arquivo gerado como resposta para o cliente
+        res.download(outputFile, `dump_chat_${id_chat}.sql`, (err) => {
+            if (err) {
+                console.error('Erro ao enviar o arquivo:', err);
+                res.status(500).send('Erro ao enviar o arquivo');
+            } else {
+                // Após o download, excluir o arquivo gerado
+                fs.unlink(outputFile, (unlinkErr) => {
+                    if (unlinkErr) console.error('Erro ao excluir o arquivo:', unlinkErr);
+                });
+            }
+        });
+    });
 };
 
 
