@@ -239,9 +239,11 @@ exports.archiveChat = (req, res) => {
     });
 };
 
-// buscar chats arquivados
+// buscar chats arquivados com id do grupo
 exports.getArchivedChats = (req, res) => {
-    db.query('SELECT * FROM `chats` WHERE deleted_at IS NOT NULL', (err, results) => {
+    const id_group = req.params.id_group;
+
+    db.query('SELECT * FROM `chats` WHERE id_group = ? AND deleted_at IS NOT NULL', [id_group], (err, results) => {
         if (err) {
             console.error('Erro ao buscar chats arquivados:', err);
             return res.status(500).send('Erro ao buscar chats arquivados');
@@ -249,4 +251,3 @@ exports.getArchivedChats = (req, res) => {
         res.json(results);
     });
 };
-
