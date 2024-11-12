@@ -23,6 +23,7 @@ router.post('/chatsuser/:id_chat/:id_user', chatController.deleteUserChat);
 router.post('/chats', chatController.createChat);
 router.post('/chats/edit', chatController.editChat);
 router.post('/chats/users', chatController.createUserChat);
+router.post('/chats/archive/:id_chat', chatController.archiveChat);
 
 // Rotas de autenticação
 router.post('/login', authController.login);

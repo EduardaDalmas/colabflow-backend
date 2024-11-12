@@ -226,3 +226,16 @@ exports.dumpChat = (req, res) => {
 };
 
 
+//função para arquivar o chat (deleted_at)
+exports.archiveChat = (req, res) => {
+    const id_chat = req.params.id_chat;
+
+    db.query('UPDATE `chats` SET deleted_at = NOW() WHERE id = ?', [id_chat], (err, result) => {
+        if (err) {
+            console.error('Erro ao arquivar chat:', err);
+            return res.status(500).send('Erro ao arquivar chat');
+        }
+        res.status(200).send('Chat arquivado com sucesso');
+    });
+};
+
