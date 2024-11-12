@@ -4,7 +4,9 @@ const { authPlugins } = require("mysql2");
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
+exports.up = async function(knex) {
+  const exists = await knex.schema.hasTable('notifications');
+  if (!exists) {
     return knex.schema.createTable('notifications', (table) => {
       table.increments('id').primary(); // ID da notificação
       table.integer('message_id').unsigned().notNullable();
@@ -17,12 +19,13 @@ exports.up = function(knex) {
       table.foreign('message_id').references('id').inTable('messages').onDelete('CASCADE');
       table.foreign('chat_id').references('id').inTable('chats').onDelete('CASCADE');
     });
-  };
-  
-  /**
-   * @param { import("knex").Knex } knex
-   * @returns { Promise<void> }
-   */
-  exports.down = function(knex) {
-    return knex.schema.dropTableIfExists('notifications');
-  };  
+  }
+};
+
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.down = function(knex) {
+  return knex.schema.dropTableIfExists('notifications');
+};
