@@ -239,3 +239,14 @@ exports.archiveChat = (req, res) => {
     });
 };
 
+// buscar chats arquivados
+exports.getArchivedChats = (req, res) => {
+    db.query('SELECT * FROM `chats` WHERE deleted_at IS NOT NULL', (err, results) => {
+        if (err) {
+            console.error('Erro ao buscar chats arquivados:', err);
+            return res.status(500).send('Erro ao buscar chats arquivados');
+        }
+        res.json(results);
+    });
+};
+
