@@ -16,7 +16,7 @@ router.post('/users/account/edit', userController.editUser);
 
 // Rotas de chat
 router.get('/chats', chatController.getAllChats);
-router.get('/chats-archive', chatController.getArchivedChats);
+router.get('/chats-archive/:id_group', chatController.getArchivedChats);
 router.get('/chats/users/:id_chat', chatController.getUsersChat);
 router.get('/chats/:id_group/:id_user', chatController.getChatByGroupId);
 router.get('/chats-dump/:id_chat', chatController.dumpChat);
