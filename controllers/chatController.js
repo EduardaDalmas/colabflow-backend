@@ -24,7 +24,8 @@ exports.getChatByGroupId = (req, res) => {
         LEFT JOIN user_chat uc ON c.id = uc.id_chat
         LEFT JOIN \`groups\` g ON c.id_group = g.id
         WHERE c.id_group = ?
-        AND (c.id_user = ? OR uc.id_user = ?);
+        AND (c.id_user = ? OR uc.id_user = ?)
+        AND c.deleted_at IS NULL;
     `;
 
     db.query(query, [id_group, id_user, id_user], async (err, results) => {
