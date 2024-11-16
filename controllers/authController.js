@@ -48,12 +48,25 @@ exports.verifyOTP = async (req, res) => {
 
   // Excessão para um unico usuário ignorando o OTP real
   if (email === 'adriellyhomem@ienh.com.br' && otp === '000000') {
+
+    const [result] = await db.promise().query(`
+      SELECT id, 
+            (SELECT COUNT(*) FROM profiles WHERE id_user = ?) AS total
+      FROM profiles 
+      WHERE id_user = ? 
+      LIMIT 1
+    `, [user.id, user.id]);
+
+    // Se houver apenas um perfil, retorna o id; caso contrário, retorna null ou uma mensagem
+    // const profileId = result[0].total === 1 ? result[0].id : null;
+    const profileId = result.length > 0 && result[0].total === 1 ? result[0].id : null;
+
     const payload = { id: user.id, email: user.email, name: user.name };
     const token = jwt.sign(payload, secret, { expiresIn: 86400 }); // 24 horas
     return res.status(200).send({
       auth: true,
       token: token,
-      user: { id: user.id, name: user.name, email: user.email },
+      user: { id: user.id, name: user.name, email: user.email, profiles: profileId },
       message: 'OTP verificado com sucesso'
     });
   }
