@@ -4,9 +4,6 @@ const db = require('../config/db');
 const jwt = require('jsonwebtoken');
 const secret = 'sua_chave_secreta';
 
-
-
-
 exports.getUserByEmail = (req, res) => {
     const userEmail = req.params.email;
     const userQuery = `SELECT * FROM users WHERE email = '${userEmail}'`;
@@ -71,4 +68,26 @@ exports.createUser = (req, res) => {
     const newUser = req.body;
     // Aqui você salvaria o novo usuário no banco de dados
     res.status(201).json({ message: 'Usuário criado com sucesso', user: newUser });
+};
+
+
+
+// inserir foto de perfil no campo photo
+exports.addPhoto = (req, res) => {
+    const { id, photo } = req.body;
+
+    const userQuery = `UPDATE users SET photo = ? WHERE id = ?`;
+
+    db.query(userQuery, [photo, id], (err, results) => {
+        if (err) {
+            console.error('Erro ao adicionar foto:', err);
+            return res.status(500).json({ message: 'Erro ao adicionar foto', error: err });
+        }
+
+        if (results.affectedRows === 0) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        res.status(200).json({ message: 'Foto adicionada com sucesso' });
+    });
 };

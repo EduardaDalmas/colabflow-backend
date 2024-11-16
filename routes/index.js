@@ -13,6 +13,7 @@ router.post('/users', userController.createUser);
 router.get('/users/account/:email', userController.getUserByEmail);
 router.get('/users/accountProfile/:id', userController.getUserById);
 router.post('/users/account/edit', userController.editUser);
+router.post('/user/photo', userController.addPhoto);
 
 // Rotas de chat
 router.get('/chats', chatController.getAllChats);

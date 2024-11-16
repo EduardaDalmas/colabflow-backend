@@ -14,6 +14,8 @@ const socketPort = process.env.SOCKET_PORT || 3001;
 
 // Middleware para parsing de JSON
 app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // lista de origens permitidas
 const whitelist = ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:3001', 'http://colabflow.westus2.cloudapp.azure.com', 'https://colabflow.westus2.cloudapp.azure.com'];
