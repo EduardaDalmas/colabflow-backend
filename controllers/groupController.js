@@ -74,19 +74,29 @@ exports.getGroupByUserId = (req, res) => {
     );
 };
 
-// Função para buscar grupos que possuem chats onde o usuário participa
+// Função para buscar grupos que possuem chats onde o usuário participa, com contagem de notificações não lidas
 exports.getGroupByChatUser = (req, res) => {
     const id_user = req.params.id_user;
 
     db.query(`
-        SELECT DISTINCT g.id, g.name, g.id_priority, p.name AS priority_name
+        SELECT DISTINCT 
+            g.id, 
+            g.name, 
+            g.id_priority, 
+            p.name AS priority_name,
+            COUNT(nr.id) AS unread_message_count  -- Contagem de notificações não lidas
         FROM \`groups\` g
         JOIN chats c ON g.id = c.id_group
         JOIN user_chat uc ON c.id = uc.id_chat
         JOIN priorities p ON g.id_priority = p.id
+        LEFT JOIN notifications n ON c.id = n.chat_id
+        LEFT JOIN notification_reads nr ON n.id = nr.notification_id 
+            AND nr.read_at IS NULL  -- Verifica se a notificação não foi lida
+            AND nr.user_id = ?  -- Filtra as notificações do usuário
         WHERE uc.id_user = ? 
-        AND g.id_user != ?
-    `, [id_user, id_user], (err, results) => {        
+        AND g.id_user != ?  -- Exclui grupos onde o usuário é o dono
+        GROUP BY g.id, g.name, g.id_priority, p.name
+    `, [id_user, id_user, id_user], (err, results) => {        
         if (err) {
             console.error('Erro ao buscar grupos:', err);
             return res.status(500).send('Erro ao buscar grupos');
@@ -96,19 +106,21 @@ exports.getGroupByChatUser = (req, res) => {
             return res.status(404).send('Grupo não encontrado');
         }
 
-        // Mapear os resultados para o formato esperado
+        // Mapear os resultados para o formato esperado, incluindo a contagem de notificações
         const formattedResults = results.map(group => ({
             id: group.id,
             name: group.name,  // Nome do grupo
             priority: {
-                id: group.id_priority, // Corrigido para 'id_priority'
+                id: group.id_priority, // ID da prioridade
                 name: group.priority_name // Nome da prioridade
-            }
+            },
+            unread_message_count: group.unread_message_count  // Contagem de notificações não lidas
         }));
 
         res.json(formattedResults);  // Retorna os grupos formatados
     });
 };
+
 
 
 
