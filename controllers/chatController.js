@@ -17,7 +17,6 @@ exports.getAllChats = (req, res) => {
 exports.getChatByGroupId = (req, res) => {
     const id_group = req.params.id_group;
     const id_user = req.params.id_user;
-    console.log('id aquiiiii carai',id_user);
 
     const query = `
         SELECT DISTINCT c.id, c.name, c.id_user, c.id_priority, g.id_user AS group_owner

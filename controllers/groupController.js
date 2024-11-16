@@ -28,13 +28,20 @@ exports.getGroupByUserId = (req, res) => {
             groups.name, 
             groups.id_user,
             priorities.id AS priority_id, 
-            priorities.name AS priority_name
+            priorities.name AS priority_name,
+            COUNT(nr.id) AS unread_message_count
         FROM \`groups\`
         INNER JOIN priorities ON groups.id_priority = priorities.id
+        LEFT JOIN chats c ON groups.id = c.id_group
+        LEFT JOIN notifications n ON c.id = n.chat_id
+        LEFT JOIN notification_reads nr ON n.id = nr.notification_id 
+            AND nr.read_at IS NULL 
+            AND nr.user_id = ?  -- Aqui filtra pelas notificações do usuário
         WHERE groups.id_user = ? 
         AND groups.id_context = ? 
-        AND groups.deleted_at IS NULL`,
-        [id_user, id_context],
+        AND groups.deleted_at IS NULL
+        GROUP BY groups.id, groups.name, groups.id_user, priorities.id, priorities.name`,
+        [id_user, id_user, id_context],
         (err, results) => {
             if (err) {
                 console.error('Erro ao buscar grupos:', err);
@@ -44,6 +51,10 @@ exports.getGroupByUserId = (req, res) => {
                 return res.status(404).send('Grupo não encontrado');
             }
 
+
+
+                
+
             // Mapear os resultados para o formato esperado
             const formattedResults = results.map(group => ({
                 id: group.id,
@@ -52,8 +63,11 @@ exports.getGroupByUserId = (req, res) => {
                     id: group.priority_id,
                     name: group.priority_name
                 },
-                id_owner: group.id_user
+                id_owner: group.id_user,
+                unread_message_count: group.unread_message_count
             }));
+
+            console.log('formattedResults:', formattedResults);
 
             res.json(formattedResults);
         }
