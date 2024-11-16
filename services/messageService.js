@@ -70,6 +70,7 @@ const decryptMessages = (message) => {
 
 const getMessages = (chatName, userName) => {
     return new Promise((resolve, reject) => {
+
         const query = `
             SELECT m.id, m.id_chat, m.id_user, m.message, m.created_at,
                    u.name AS author
@@ -83,6 +84,30 @@ const getMessages = (chatName, userName) => {
                 console.error('Erro ao buscar mensagens:', err);
                 reject(err);
             } else {
+
+                // update na tabela notification_reads para marcar as mensagens como lidas ao entrar no chat de acordo com o usuario
+                const query = `
+                UPDATE notification_reads 
+                SET read_at = NOW()
+                WHERE user_id = (SELECT id FROM users WHERE name = ?)
+                  AND notification_id IN (
+                    SELECT n.id 
+                    FROM notifications n
+                    JOIN chats c ON n.chat_id = c.id
+                    JOIN messages m ON n.message_id = m.id
+                    WHERE c.name = ?
+                      AND m.id_chat = c.id
+                  );
+                `;
+                db.query(query, [userName, chatName], (err, result) => {
+                    if (err) {
+                        console.error('Erro ao atualizar notificações:', err);
+                    }
+                }
+                );
+            
+
+
                 // Mapeando o resultado para o formato desejado
                 const formattedMessages = result.map((message) => {
                     const decryptedMessage = decryptMessage(message.message); // Descriptografando a mensagem

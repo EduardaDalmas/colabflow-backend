@@ -17,6 +17,7 @@ exports.getAllChats = (req, res) => {
 exports.getChatByGroupId = (req, res) => {
     const id_group = req.params.id_group;
     const id_user = req.params.id_user;
+    console.log('id aquiiiii carai',id_user);
 
     const query = `
         SELECT DISTINCT c.id, c.name, c.id_user, c.id_priority, g.id_user AS group_owner
@@ -33,8 +34,13 @@ exports.getChatByGroupId = (req, res) => {
             // Mapeia os resultados e cria uma lista de promessas para a contagem de notificações
             const resultsWithNotifications = await Promise.all(results.map(async (chat) => {
                 const count = await new Promise((resolve, reject) => {
-                    const notificationQuery = `SELECT COUNT(*) AS count FROM \`notifications\` WHERE chat_id = ? AND status = 'NOVA'`;
-                    db.query(notificationQuery, [chat.id], (err, result) => {
+                    const notificationQuery = `
+                    SELECT COUNT(*) AS count
+                        FROM notification_reads nr
+                        JOIN notifications n ON nr.notification_id = n.id
+                        WHERE n.chat_id = ? AND nr.user_id = ? AND nr.read_at IS NULL
+                    `;
+                    db.query(notificationQuery, [chat.id, id_user], (err, result) => {
                         if (err) {
                             reject(err);  // Caso ocorra um erro na consulta de notificações
                         } else {
