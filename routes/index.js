@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 
 const userController = require('../controllers/userController');
@@ -8,12 +9,20 @@ const profileController = require('../controllers/profileController');
 const groupController = require('../controllers/groupController');
 const linkController = require('../controllers/linkController');
 
+// Configura o multer para salvar a foto diretamente na memória (em um buffer)
+const storage = multer.memoryStorage();  // Usando storage em memória
+const upload = multer({ storage: storage });  // Criação da instância do multer
+
+
 // Rotas de usuários
 router.post('/users', userController.createUser);
 router.get('/users/account/:email', userController.getUserByEmail);
 router.get('/users/accountProfile/:id', userController.getUserById);
 router.post('/users/account/edit', userController.editUser);
-router.post('/user/photo', userController.addPhoto);
+// router.post('/user/photo/:id_user', userController.addPhoto);
+//cria a rota para receber a foto e id do usuario, foto como formdata
+router.post('/user/photo/:id_user', upload.single('photo'), userController.addPhoto);
+
 
 // Rotas de chat
 router.get('/chats', chatController.getAllChats);
