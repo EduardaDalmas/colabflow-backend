@@ -47,7 +47,7 @@ exports.verifyOTP = async (req, res) => {
   const user = results[0];
 
   // Excessão para um unico usuário ignorando o OTP real
-  if (email === 'adriellyhomem@ienh.com.br' || 'adriellyshomem@gmail.com' && otp === '000000') {
+  if (email === 'adriellyhomem@ienh.com.br'  && otp === '000000' || 'adriellyshomem@gmail.com' && otp === '000000') {
 
     const [result] = await db.promise().query(`
       SELECT id, 
