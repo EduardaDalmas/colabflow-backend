@@ -74,14 +74,22 @@ exports.createUser = (req, res) => {
 
 // inserir foto de perfil no campo photo
 exports.addPhoto = (req, res) => {
-    const { id, photo } = req.body;
+    const { id_user } = req.params;  // Pega o id_user da URL
+    const photo = req.file;  // O arquivo de foto estará em req.file quando usar o multer
+    // Verificação básica para garantir que uma foto foi enviada
+    if (!photo || photo.length === 0) {
+        return res.status(400).json({ message: 'Nenhuma foto foi enviada.' });
+    }
+    
 
     const userQuery = `UPDATE users SET photo = ? WHERE id = ?`;
 
-    db.query(userQuery, [photo, id], (err, results) => {
+    db.query(userQuery, [photo.buffer, id_user], (err, results) => {
         if (err) {
             console.error('Erro ao adicionar foto:', err);
+
             return res.status(500).json({ message: 'Erro ao adicionar foto', error: err });
+            
         }
 
         if (results.affectedRows === 0) {
@@ -89,5 +97,6 @@ exports.addPhoto = (req, res) => {
         }
 
         res.status(200).json({ message: 'Foto adicionada com sucesso' });
+        console.log('ok');
     });
 };

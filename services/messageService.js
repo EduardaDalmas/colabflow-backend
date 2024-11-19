@@ -72,12 +72,13 @@ const getMessages = (chatName, userName) => {
     return new Promise((resolve, reject) => {
 
         const query = `
-            SELECT m.id, m.id_chat, m.id_user, m.message, m.created_at,
-                   u.name AS author
-            FROM messages m
-            JOIN users u ON m.id_user = u.id
-            WHERE m.id_chat = (SELECT id FROM chats WHERE name = ?)
-        `;
+        SELECT m.id, m.id_chat, m.id_user, m.message, m.created_at,
+               u.name AS author, u.photo AS photo
+        FROM messages m
+        JOIN users u ON m.id_user = u.id
+        WHERE m.id_chat = (SELECT id FROM chats WHERE name = ?)
+    `;
+    
 
         db.query(query, [chatName, userName], (err, result) => {
             if (err) {
@@ -120,7 +121,9 @@ const getMessages = (chatName, userName) => {
                         // data: message.created_at.toISOString().slice(0, 19).replace('T', ' '), // Formatação da data
                         //formata a data removendo a virgula
                         data: localDate, // Formatação da data
-                        room: chatName               // Nome da sala
+                        room: chatName,               // Nome da sala
+                        photo: message.photo
+                    
                     };
                 });
                 resolve(formattedMessages);

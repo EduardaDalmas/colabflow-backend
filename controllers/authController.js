@@ -66,7 +66,7 @@ exports.verifyOTP = async (req, res) => {
     return res.status(200).send({
       auth: true,
       token: token,
-      user: { id: user.id, name: user.name, email: user.email, profiles: profileId },
+      user: { id: user.id, name: user.name, email: user.email, profiles: profileId, photo: user.photo },
       message: 'OTP verificado com sucesso'
     });
   }
@@ -126,7 +126,7 @@ exports.verifyOTP = async (req, res) => {
     return res.status(200).send({
       auth: true,
       token: token,
-      user: { id: user.id, name: user.name, email: user.email, profiles: profileId },
+      user: { id: user.id, name: user.name, email: user.email, profiles: profileId, photo: user.photo },
       message: 'OTP verificado com sucesso'
     });
 
